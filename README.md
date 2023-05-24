@@ -2,7 +2,7 @@
 
 Example notebooks grouping prostate anatomy segmentation use cases, using MONAI or nnUNet on IDC publicly available prostate MRI data.
 
-The **pcDetectionBundle contains the experimental monai bundle we created for prostate cancer segmentation application on IDC data, based on already available MONAI prostate158 bundle.**
+The **pcDetectionBundle** contains the experimental monai bundle we created for prostate cancer segmentation application on IDC data, based on already available MONAI prostate158 bundle.
 
 The symposium notebooks folder contains examples on, using nnUNet pre-trained segmentation model, how to :
 
