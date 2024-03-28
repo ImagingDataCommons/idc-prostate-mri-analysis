@@ -1,0 +1,42 @@
+WITH temp_query as (
+SELECT
+  DISTINCT SeriesInstanceUID,
+  StudyInstanceUID,
+  PatientID,
+  RepetitionTime,
+  EchoTime,
+  SliceThickness,
+  PixelSpacing[SAFE_OFFSET(0)] as PixelSpacing,
+  CASE
+    WHEN SeriesDescription LIKE '%t2_tse_tra%' AND collection_id = "prostatex" AND Modality = "MR" THEN "t2w_prostateX" 
+    WHEN SeriesDescription LIKE '%ADC%' AND collection_id = "prostatex" AND Modality = "MR" THEN "adc_prostateX"
+    WHEN SeriesDescription LIKE '%T2 Weighted Axial%' AND collection_id = "qin_prostate_repeatability" AND Modality = "MR" THEN "t2w_qin_prostate_repeatability"
+    WHEN SeriesDescription LIKE '%Apparent Diffusion Coefficient%' AND collection_id = "qin_prostate_repeatability" AND Modality = "MR" THEN "adc_qin_prostate_repeatability"
+    WHEN collection_id = "prostate_mri_us_biopsy" AND Modality = "MR" THEN "t2w_prostate_mri_us_biopsy"
+    ELSE CONCAT(SeriesDescription, collection_id, Modality)
+END AS collection_sequence_id
+FROM `bigquery-public-data.idc_v15.dicom_all`
+WHERE collection_id IN ('prostatex', 'qin_prostate_repeatability', "prostate_mri_us_biopsy")
+ORDER BY collection_sequence_id DESC)
+SELECT 
+    DISTINCT(collection_sequence_id),
+    ROUND(AVG(CAST(RepetitionTime AS FLOAT64)) OVER(PARTITION BY collection_sequence_id),2) AS avg_RepetitionTime,
+    ROUND(STDDEV(CAST(RepetitionTime AS FLOAT64)) OVER(PARTITION BY collection_sequence_id),2)  AS std_dev_RepetitionTime,
+    ROUND(MIN(CAST(RepetitionTime AS FLOAT64)) OVER(PARTITION BY collection_sequence_id),2) AS min_RepetitionTime,
+    ROUND(MAX(CAST(RepetitionTime AS FLOAT64)) OVER(PARTITION BY collection_sequence_id),2) AS max_RepetitionTime,
+    ROUND(AVG(CAST(EchoTime AS FLOAT64)) OVER(PARTITION BY collection_sequence_id),2) AS avg_EchoTime,
+    ROUND(STDDEV(CAST(EchoTime AS FLOAT64)) OVER(PARTITION BY collection_sequence_id),2) AS std_dev_EchoTime,
+    ROUND(MIN(CAST(EchoTime AS FLOAT64)) OVER(PARTITION BY collection_sequence_id),2) AS min_EchoTime,
+    ROUND(MAX(CAST(EchoTime AS FLOAT64)) OVER(PARTITION BY collection_sequence_id),2) AS max_EchoTime,
+    ROUND(AVG(CAST(SliceThickness AS FLOAT64)) OVER(PARTITION BY collection_sequence_id),2) AS avg_SliceThickness,
+    ROUND(STDDEV(CAST(SliceThickness AS FLOAT64)) OVER(PARTITION BY collection_sequence_id),2) AS std_dev_SliceThickness,
+    ROUND(MIN(CAST(SliceThickness AS FLOAT64)) OVER(PARTITION BY collection_sequence_id),2) AS min_SliceThickness,
+    ROUND(MAX(CAST(SliceThickness AS FLOAT64)) OVER(PARTITION BY collection_sequence_id),2) AS max_SliceThickness,
+    ROUND(PERCENTILE_CONT(CAST(PixelSpacing AS FLOAT64), 0.5) OVER(PARTITION BY collection_sequence_id),2) AS median_PixelSpacingX,
+    ROUND(MIN(CAST(PixelSpacing AS FLOAT64)) OVER(PARTITION BY collection_sequence_id),2) AS min_PixelSpacingX,
+    ROUND(MAX(CAST(PixelSpacing AS FLOAT64)) OVER(PARTITION BY collection_sequence_id),2) AS max_PixelSpacingX,
+    ROUND(COUNT(DISTINCT(StudyInstanceUID)) OVER(PARTITION BY collection_sequence_id),2) AS nbr_studyUID,
+    ROUND(COUNT(DISTINCT(PatientID)) OVER(PARTITION BY collection_sequence_id),2) AS nbr_PatientID,
+    ROUND(COUNT(DISTINCT(SeriesInstanceUID)) OVER(PARTITION BY collection_sequence_id),2) AS nbr_serieUID
+FROM temp_query
+WHERE collection_sequence_id IN ('t2w_prostateX', 'adc_prostateX', 't2w_qin_prostate_repeatability','adc_qin_prostate_repeatability', 't2w_prostate_mri_us_biopsy')
