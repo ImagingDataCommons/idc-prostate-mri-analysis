@@ -7,6 +7,7 @@ SELECT
   RepetitionTime,
   EchoTime,
   SliceThickness,
+  MagneticFieldStrength,
   PixelSpacing[SAFE_OFFSET(0)] as PixelSpacing,
   CASE
     WHEN SeriesDescription LIKE '%t2_tse_tra%' AND collection_id = "prostatex" AND Modality = "MR" THEN "t2w_prostateX" 
@@ -37,17 +38,11 @@ SELECT
     ROUND(PERCENTILE_CONT(CAST(PixelSpacing AS FLOAT64), 0.5) OVER(PARTITION BY collection_sequence_id), 1) AS median_PixelSpacingX,
     ROUND(MIN(CAST(PixelSpacing AS FLOAT64)) OVER(PARTITION BY collection_sequence_id), 1) AS min_PixelSpacingX,
     ROUND(MAX(CAST(PixelSpacing AS FLOAT64)) OVER(PARTITION BY collection_sequence_id), 1) AS max_PixelSpacingX,
+    ROUND(PERCENTILE_CONT(CAST(MagneticFieldStrength AS FLOAT64), 0.5) OVER(PARTITION BY collection_sequence_id), 1) as median_MagneticFieldStrength,
+    ROUND(MIN(CAST(MagneticFieldStrength AS FLOAT64)) OVER(PARTITION BY collection_sequence_id), 1) AS min_MagneticFieldStrength,
+    ROUND(MAX(CAST(MagneticFieldStrength AS FLOAT64)) OVER(PARTITION BY collection_sequence_id), 1) AS max_MagneticFieldStrength,
     COUNT(DISTINCT(StudyInstanceUID)) OVER(PARTITION BY collection_sequence_id) AS nbr_studyUID,
     COUNT(DISTINCT(PatientID)) OVER(PARTITION BY collection_sequence_id) AS nbr_PatientID,
     COUNT(DISTINCT(SeriesInstanceUID)) OVER(PARTITION BY collection_sequence_id) AS nbr_serieUID
 FROM temp_query
 WHERE collection_sequence_id IN ('t2w_prostateX', 'adc_prostateX', 't2w_qin_prostate_repeatability','adc_qin_prostate_repeatability', 't2w_prostate_mri_us_biopsy')
-
--- SELECT SeriesInstanceUID,
--- COUNT(DISTINCT(RepetitionTime))
--- FROM `bigquery-public-data.idc_v15.dicom_all`
--- WHERE collection_id = "prostatex"
--- and Modality = "MR"
--- -- and SeriesDescription LIKE '%T2 Weighted Axial%'
--- GROUP BY SeriesInstanceUID
--- HAVING COUNT(DISTINCT(RepetitionTime)) > 1
