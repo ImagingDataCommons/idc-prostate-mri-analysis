@@ -1,0 +1,6 @@
+SELECT
+  *,
+  CONCAT("https://viewer.imaging.datacommons.cancer.gov/viewer/", StudyInstanceUID, "?seriesInstanceUID=",image_SeriesInstanceUID) as image_ohif_url,
+  CAST(SPLIT(image_PixelSpacing, ",")[SAFE_OFFSET(0)] as FLOAT64) as image_PixelSpacingX
+FROM
+  `idc-sandbox-003.prostate_benchmarking_neurips_2024.prostate_benchmark_simple_table_all_table` AS t1
