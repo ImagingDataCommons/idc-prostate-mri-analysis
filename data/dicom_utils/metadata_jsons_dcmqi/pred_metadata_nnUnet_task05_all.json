@@ -1,0 +1,82 @@
+{
+  "ContentCreatorName": "Reader1",
+  "ClinicalTrialSeriesID": "Session1",
+  "ClinicalTrialTimePointID": "1",
+  "SeriesDescription": "Prostate and zonal regions segmentation - nnUNet task05",
+  "SeriesNumber": "300",
+  "InstanceNumber": "1",
+  "BodyPartExamined": "PROSTATE",
+  "segmentAttributes": [
+    [
+      {
+        "labelID": 2,
+        "SegmentDescription": "Transition zone of the prostate",
+        "SegmentAlgorithmType": "AUTOMATIC",
+        "SegmentAlgorithmName": "nnUNet-task05",
+        "SegmentedPropertyCategoryCodeSequence": {
+          "CodeValue": "123037004",
+          "CodingSchemeDesignator": "SCT",
+          "CodeMeaning": "Anatomical Structure"
+        },
+        "SegmentedPropertyTypeCodeSequence": {
+          "CodeValue": "399384005",
+          "CodingSchemeDesignator": "SCT",
+          "CodeMeaning": "Transition zone of the prostate"
+        },
+        "recommendedDisplayRGBValue": [
+          255,
+          255,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "labelID": 1,
+        "SegmentDescription": "Peripheral zone of the prostate",
+        "SegmentAlgorithmType": "AUTOMATIC",
+        "SegmentAlgorithmName": "nnUNet-task05",
+        "SegmentedPropertyCategoryCodeSequence": {
+          "CodeValue": "123037004",
+          "CodingSchemeDesignator": "SCT",
+          "CodeMeaning": "Anatomical Structure"
+        },
+        "SegmentedPropertyTypeCodeSequence": {
+          "CodeValue": "279706003",
+          "CodingSchemeDesignator": "SCT",
+          "CodeMeaning": "Peripheral zone of the prostate"
+        },
+        "recommendedDisplayRGBValue": [
+          128,
+          255,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "labelID": 3,
+        "SegmentAlgorithmType": "AUTOMATIC",
+        "SegmentAlgorithmName": "nnUNet-task05",
+        "SegmentedPropertyCategoryCodeSequence": {
+          "CodeValue": "123037004",
+          "CodingSchemeDesignator": "SCT",
+          "CodeMeaning": "Anatomical Structure"
+        },
+        "SegmentedPropertyTypeCodeSequence": {
+          "CodeValue": "41216001",
+          "CodingSchemeDesignator": "SCT",
+          "CodeMeaning": "Prostate"
+        },
+        "recommendedDisplayRGBValue": [
+          255,
+          51,
+          0
+        ]
+      }
+    ]
+  ],
+  "ContentLabel": "nnUNet-task05 pztz",
+  "ContentDescription": "Image segmentation -- nnUNet -- pz tz",
+  "ClinicalTrialCoordinatingCenterName": "dcmqi"
+}
