@@ -1,0 +1,77 @@
+SELECT
+  *,
+  'prostate_mri_us_biopsy' as collection_id,
+  'nnunet_task024-prostate_mri_us_biopsy-prostate' as algorithmNameCollection,
+FROM `idc-sandbox-003.prostate_benchmarking_neurips_2024.nnunet_task024_prostate_mri_us_biopsy_eval_results_table_copy`
+
+UNION ALL
+
+SELECT
+  *,
+  'prostatex' as collection_id,
+  'nnunet_task024-prostatex-prostate' as algorithmNameCollection
+FROM `idc-sandbox-003.prostate_benchmarking_neurips_2024.nnunet_task024_prostatex_eval_results_table`
+
+UNION ALL
+
+SELECT
+  *,
+  'qin_prostate_repeatability' as collection_id,
+  'nnunet_task024-qin_prostate_repeatability-prostate' as algorithmNameCollection
+FROM `idc-sandbox-003.prostate_benchmarking_neurips_2024.nnunet_task024_qin_prostate_repeatability_eval_results_table`
+
+UNION ALL
+
+SELECT
+  *,
+  'prostatex' as collection_id,
+  'nnunet_task05-prostatex-prostate' as algorithmNameCollection
+FROM `idc-sandbox-003.prostate_benchmarking_neurips_2024.nnunet_task05_prostatex_eval_results_table`
+
+UNION ALL
+
+SELECT
+  *,
+  'prostatex' as collection_id,
+  'nnunet_task05-prostatex-zonal' as algorithmNameCollection
+FROM `idc-sandbox-003.prostate_benchmarking_neurips_2024.nnunet_task05_prostatex_zonal_eval_results_table`
+
+UNION ALL
+
+SELECT
+  *,
+  'qin_prostate_repeatability' as collection_id,
+  'nnunet_task05-qin_prostate_repeatability-prostate' as algorithmNameCollection
+FROM `idc-sandbox-003.prostate_benchmarking_neurips_2024.nnunet_task05_qin_prostate_repeatability_eval_results_table`
+
+UNION ALL
+
+SELECT
+  *,
+  'prostate_mri_us_biopsy' as collection_id,
+  'prostate158-prostate_mri_us_biopsy-prostate' as algorithmNameCollection
+FROM `idc-sandbox-003.prostate_benchmarking_neurips_2024.prostate158_prostate_mri_us_biopsy_eval_results_table`
+
+UNION ALL
+
+SELECT
+  *,
+  'prostatex' as collection_id,
+  'prostate158-prostatex-prostate' as algorithmNameCollection
+FROM `idc-sandbox-003.prostate_benchmarking_neurips_2024.prostate158_prostatex_whole_prostate_eval_results_table`
+
+UNION ALL
+
+SELECT
+  *,
+  'prostatex' as collection_id,
+  'prostate158-prostatex-zonal' as algorithmNameCollection
+FROM `idc-sandbox-003.prostate_benchmarking_neurips_2024.prostate158_prostatex_zonal_eval_results_table`
+
+UNION ALL
+
+SELECT
+  *,
+  'qin_prostate_repeatability' as collection_id,
+  'prostate158-qin_prostate_repeatability-prostate' as algorithmNameCollection
+FROM `idc-sandbox-003.prostate_benchmarking_neurips_2024.prostate158_qin_prostate_repeatability_eval_results_table`

@@ -1,0 +1,82 @@
+WITH
+  temp_result AS (
+  SELECT
+    measurements.* EXCEPT(PatientID, SOPInstanceUID),
+    segmentations.* EXCEPT(PatientID, SOPInstanceUID),
+    measurements.SOPInstanceUID as measurements_SOPInstanceUID,
+    segmentations.SOPInstanceUID as segmentations_SOPInstanceUID,
+    metrics.* EXCEPT(collection_id),
+    dicom_all.collection_id AS collection_id,
+    dicom_all.* EXCEPT(collection_id),
+    CONCAT("https://fir-idc-prostate-ohif.web.app/viewer/",StudyInstanceUID,
+    "!secondGoogleServer=/projects/idc-sandbox-003/locations/us/datasets/neurips_2024_dataset/dicomStores/neurips_2024_ai_seg_dcm_datastore") AS viewer_url
+  FROM
+    `idc-sandbox-003.prostate_benchmarking_neurips_2024.expert_quantitative_measurements_table` AS measurements
+  RIGHT JOIN
+    `idc-sandbox-003.prostate_benchmarking_neurips_2024.segmentations_table` AS segmentations
+  ON
+    measurements.sourceSegmentedSeriesUID = segmentations.segmented_SeriesInstanceUID
+    -- AND measurements.segmentationSegmentNumber[SAFE_OFFSET(0)] = segmentations.SegmentNumber
+    AND LOWER(SPLIT(measurements.findingSite.CodeMeaning, " ")[0]) = LOWER(SPLIT(segmentations.SegmentedPropertyType.CodeMeaning, " ")[0])
+  JOIN (
+    SELECT
+      SeriesInstanceUID as image_SeriesInstanceUID,
+      ANY_VALUE(collection_id) AS collection_id,
+      ANY_VALUE(ROUND(CAST(PixelSpacing[SAFE_OFFSET(0)] AS FLOAT64),2)) AS image_PixelSpacingX,
+      ANY_VALUE(ROUND(CAST(PixelSpacing[SAFE_OFFSET(1)] AS FLOAT64),2)) AS image_PixelSpacingY,
+      ANY_VALUE(ROUND(CAST(SliceThickness AS FLOAT64), 2)) as image_SliceThickness,
+      ANY_VALUE(ARRAY_TO_STRING(ImageOrientationPatient, ",")) as image_OrientationPatient,
+      ANY_VALUE(SequenceName) as image_SequenceName,
+      ANY_VALUE(MagneticFieldStrength) AS image_MagneticFieldStrength,
+      ANY_VALUE(RepetitionTime) AS image_RepetitionTime,
+      ANY_VALUE(EchoTrainLength) as image_EchoTrainLength,
+      ANY_VALUE(EchoNumbers) as image_EchoNumbers,
+      ANY_VALUE(EchoPulseSequence) as image_EchoPulseSequence,
+      ANY_VALUE(EchoPlanarPulseSequence) as image_EchoPlanarPulseSequence,
+      ANY_VALUE(FieldOfViewDimensions) as image_FieldOfViewDimensions,
+      ANY_VALUE(FieldOfViewShape) as image_FieldOfViewShape,
+      ANY_VALUE(ReceiveCoilType) as image_ReceiveCoilType,
+      ANY_VALUE(ReceiveCoilName) as image_ReceiveCoilName,
+      ANY_VALUE(GradientOutputType) as image_GradientOutputType,
+      -- ANY_VALUE(SpacingBetweenSlices) as image_SpacingBetweenSlices,
+      ANY_VALUE(FrequencyCorrection) as image_FrequencyCorrection,
+      -- ANY_VALUE(Excitat)
+      -- ANY_VALUE(Contrast)
+      ANY_VALUE(CAST(FlipAngle  AS FLOAT64)) as image_FlipAngle,
+      ANY_VALUE(EchoTime) as image_EchoTime,
+      ANY_VALUE(InversionTime) as image_InversionTime,
+      ANY_VALUE(SeriesDate) as image_SeriesDate,
+      ANY_VALUE(StudyDate) as image_StudyDate,
+      ANY_VALUE(SeriesDescription) as image_SeriesDescription,
+      ANY_VALUE(StudyDescription) as image_StudyDescription,
+      ANY_VALUE(SpacingBetweenSlices) as image_SpacingBetweenSlices,
+      ANY_VALUE(Manufacturer) as image_Manufacturer,
+      ANY_VALUE(ManufacturerModelName) as image_ManufacturerModelName,
+      ANY_VALUE(PatientID) as image_PatientID,
+      CAST(ANY_VALUE(ARRAY_REVERSE(SPLIT(PatientID, "-"))[SAFE_OFFSET(0)]) AS STRING) as image_caseID
+    FROM
+      `bigquery-public-data.idc_current.dicom_all`
+    GROUP BY
+      SeriesInstanceUID) AS dicom_all
+  ON
+    segmentations.segmented_SeriesInstanceUID = dicom_all.image_SeriesInstanceUID
+  JOIN
+    `idc-sandbox-003.prostate_benchmarking_neurips_2024.union_evaluation_results_table` AS metrics
+  ON
+    metrics.ai_serieUID = segmentations.SeriesInstanceUID
+    AND LOWER(SPLIT(metrics.segment, " ")[0]) = LOWER(SPLIT(segmentations.SegmentedPropertyType.CodeMeaning, " ")[0])
+  ORDER BY
+    segmentations.segmented_SeriesInstanceUID,
+    segmentations.SegmentAlgorithmName)
+SELECT
+  temp_result.* EXCEPT(image_caseID),
+  CAST(temp_result.image_caseID AS INT64) as image_caseID
+  -- temp_result.segmentAlgorithmName,
+  -- temp_result.SegmentedPropertyType.CodeMeaning,
+  -- temp_result.collection_id,
+  -- COUNT(DISTINCT(temp_result.segmented_SeriesInstanceUID)) as count_results_per_segmented_SerieUID
+FROM
+  temp_result
+-- WHERE
+--   REGEXP_CONTAINS(image_caseID, r"^[A-Za-z]+$")
+-- GROUP BY temp_result.segmentAlgorithmName, temp_result.SegmentedPropertyType.CodeMeaning, temp_result.collection_id
