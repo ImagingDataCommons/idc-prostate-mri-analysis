@@ -19,42 +19,50 @@
 
 				#Evaluation variables
 				## AI
-				Array[String] dicomAiCodeValuesEval_lst = []
-				Array[String] dicomAiCodeMeaningEval_lst = []
-				Array[String] dicomAiCodingSchemeDesignatorEval_lst = []
+				Array[String] dicomAiCodeValuesEval_lst
+				Array[String] dicomAiCodeMeaningEval_lst
+				Array[String] dicomAiCodingSchemeDesignatorEval_lst
 				## IDC
-				Array[String] dicomIdcCodeValuesEval_lst = []
-				Array[String] dicomIdcCodeMeaningEval_lst = []
-				Array[String] dicomIdcCodingSchemeDesignatorEval_lst = []
-				##Combination variables -- indicate whole prostate gland code
-				Array[String] dicomCodeValuesProstate_lst = []
-				Array[String] dicomCodeMeaningProstate_lst = []
-				Array[String] dicomCodingSchemeDesignatorProstate_lst = []
+				Array[String] dicomIdcCodeValuesEval_lst
+				Array[String] dicomIdcCodeMeaningEval_lst
+				Array[String] dicomIdcCodingSchemeDesignatorEval_lst
+                ### Second set of variables for potential second list of idcSegs
+                Array[String] dicomIdcAddCodeValuesEval_lst
+                Array[String] dicomIdcAddCodeMeaningEval_lst
+                Array[String] dicomIdcAddCodingSchemeDesignatorEval_lst
+                ##Combination variables -- indicate whole prostate gland code
+                Array[String] dicomCodeValuesProstate_lst
+                Array[String] dicomCodeMeaningProstate_lst
+                Array[String] dicomCodingSchemeDesignatorProstate_lst
 
 				#radiomics computation variables
 				## compute radiomics for every segment available
 				### AI DICOM SEG parameters
-				Array[String] dicomSrAiCodeValues_lst = []
-				Array[String] dicomSrAiCodeMeaning_lst = []
-				Array[String] dicomSrAiCodingSchemeDesignator_lst = []
+				Array[String] dicomSrAiCodeValues_lst
+				Array[String] dicomSrAiCodeMeaning_lst
+				Array[String] dicomSrAiCodingSchemeDesignator_lst
 				### IDC DICOM SR parameters
-				Array[String] dicomSrIdcCodeValues_lst = []
-				Array[String] dicomSrIdcCodeMeaning_lst = []
-				Array[String] dicomSrIdcCodingSchemeDesignator_lst = []
+				Array[String] dicomSrIdcCodeValues_lst
+				Array[String] dicomSrIdcCodeMeaning_lst
+				Array[String] dicomSrIdcCodingSchemeDesignator_lst
 
 				#IDC serieUIDs parameters
-				Array[String] idcSegSeriesInstanceUIDs = []
-				Array[String] seriesInstanceUIDs = []
-				Array[String] adcSeriesInstanceUIDs = []
-
+				Array[String] idcSegSeriesInstanceUIDs
+                Array[String] idcAddSegSeriesInstancceUIDs
+                Array[String] seriesInstanceUIDs
+                Array[String] adcSeriesInstanceUIDs
+				String collection_id 
+				
 				#mhub
 				Array[String] mhub_model_name_lst
 				Array[File] mhubai_custom_config_lst
-
+				Array[String] mhubaiCustomSegmentAlgorithmName_lst
+				
 				#VM Config
 				Int cpus = 4
 				Int ram = 15
 				Int preemptibleTries = 5
+				Int maxRetries = 1
 				String gpuType = 'nvidia-tesla-t4'
 				String gpuZones = "europe-west2-a europe-west2-b asia-northeast1-a asia-northeast1-c asia-southeast1-a asia-southeast1-b asia-southeast1-c us-east4-a us-east4-b us-east4-c"
 				String cpuZones = "asia-northeast2-a asia-northeast2-b asia-northeast2-c europe-west4-a europe-west4-b europe-west4-c europe-north1-a europe-north1-b europe-north1-c us-central1-a us-central1-b us-central1-c us-central1-f us-east1-b us-east1-c us-east1-d us-west1-a us-west1-b us-west1-c"
@@ -69,6 +77,7 @@
 				cpus = cpus,
 				ram = ram,
 				preemptibleTries = preemptibleTries,
+				maxRetries = maxRetries,
 				cpuZones = cpuZones,
 				docker = "cciausu1/prostate-analysis:v1"
 		}
@@ -78,13 +87,42 @@
 				dicom_sr_CodeValues_lst = dicomSrIdcCodeValues_lst,
 				dicom_sr_codeMeaning_lst = dicomSrIdcCodeMeaning_lst,
 				dicom_sr_CodingSchemeDesignator_lst = dicomSrIdcCodingSchemeDesignator_lst,
+				terraRadSeriesDescription = "",
 				cpus = cpus,
 				ram = ram,
 				preemptibleTries = preemptibleTries,
+				maxRetries = maxRetries,
 				cpuZones = cpuZones,
 				docker = "cciausu1/prostate-analysis:v1"
 		}
-		call ddl_idc_data {
+        call idc_combine_seg as idc_combine_seg_add {
+			input:
+				idcSegSeriesInstanceUIDs = idcAddSegSeriesInstancceUIDs,
+                dicomCodeValuesProstate_lst = dicomCodeValuesProstate_lst,
+				dicomCodeMeaningProstate_lst = dicomCodeMeaningProstate_lst,
+				dicomCodingSchemeDesignatorProstate_lst = dicomCodingSchemeDesignatorProstate_lst,
+				cpus = cpus,
+				ram = ram,
+				preemptibleTries = preemptibleTries,
+				maxRetries = maxRetries,
+				cpuZones = cpuZones,
+				docker = "cciausu1/prostate-analysis:v1"
+		}
+        call compute_radiomics as idc_rads_add {
+			input:
+				SEG_OUTPUT = idc_combine_seg_add.idcCombinationOutputFile,
+				dicom_sr_CodeValues_lst = dicomSrIdcCodeValues_lst,
+				dicom_sr_codeMeaning_lst = dicomSrIdcCodeMeaning_lst,
+				dicom_sr_CodingSchemeDesignator_lst = dicomSrIdcCodingSchemeDesignator_lst,
+				terraRadSeriesDescription = "",
+				cpus = cpus,
+				ram = ram,
+				preemptibleTries = preemptibleTries,
+				maxRetries = maxRetries,
+				cpuZones = cpuZones,
+				docker = "cciausu1/prostate-analysis:v1"
+		}
+        call ddl_idc_data {
 			input:
 				t2SeriesInstanceUIDs = seriesInstanceUIDs,
 				adcSeriesInstanceUIDs = adcSeriesInstanceUIDs,
@@ -92,6 +130,7 @@
 				cpuZones = cpuZones,
 				ram = ram,
 				preemptibleTries = preemptibleTries,
+				maxRetries = maxRetries,
 				docker = "cciausu1/prostate-analysis:v1"
 		}
 		scatter (idx in range(length(mhub_model_name_lst))) {
@@ -110,18 +149,21 @@
 					cpus = cpus,
 					ram = ram,
 					preemptibleTries = preemptibleTries,
+					maxRetries = maxRetries,
 					gpuType = gpuType,
 					gpuZones = gpuZones
 			}
 			call ai_combine_seg {
 				input:
 					MHUB_OUTPUT = mhubai_terra_runner.mhubCompressedOutputFile,
+					mhubaiCustomSegmentAlgorithmName = mhubaiCustomSegmentAlgorithmName_lst[idx],
 					dicomCodeValuesProstate_lst = dicomCodeValuesProstate_lst,
 					dicomCodeMeaningProstate_lst = dicomCodeMeaningProstate_lst,
 					dicomCodingSchemeDesignatorProstate_lst = dicomCodingSchemeDesignatorProstate_lst,
 					cpus = cpus,
 					ram = ram,
 					preemptibleTries = preemptibleTries,
+					maxRetries = maxRetries,
 					cpuZones = cpuZones,
 					docker = "cciausu1/prostate-analysis:v1"
 			}
@@ -131,9 +173,11 @@
 					dicom_sr_CodeValues_lst = dicomSrAiCodeValues_lst,
 					dicom_sr_codeMeaning_lst = dicomSrAiCodeMeaning_lst,
 					dicom_sr_CodingSchemeDesignator_lst = dicomSrAiCodingSchemeDesignator_lst,
+					terraRadSeriesDescription = mhub_model_name_lst[idx],
 					cpus = cpus,
 					ram = ram,
 					preemptibleTries = preemptibleTries,
+					maxRetries = maxRetries,
 					cpuZones = cpuZones,
 					docker = "cciausu1/prostate-analysis:v1"
 			}
@@ -151,31 +195,57 @@
 					cpus = cpus,
 					ram = ram,
 					preemptibleTries = preemptibleTries,
+					maxRetries = maxRetries,
 					cpuZones = cpuZones,
 					docker = "cciausu1/prostate-analysis:v1"
 			}
-		}
+            call evaluate_ai as evaluate_ai_add {
+				input:
+					MHUB_COMBINATION_OUTPUT = ai_combine_seg.aiCombinationOutputFile,
+					IDC_EXPERT_COMBINATION_OUTPUT = idc_combine_seg_add.idcCombinationOutputFile,
+					dicom_idc_codeValuesProstate_eval_lst = dicomIdcAddCodeValuesEval_lst,
+					dicom_idc_codeMeaningProstate_eval_lst = dicomIdcAddCodeMeaningEval_lst,
+					dicom_idc_CodingSchemeDesignatorProstate_eval_lst = dicomIdcAddCodingSchemeDesignatorEval_lst,
+					dicom_ai_codeValuesProstate_eval_lst = dicomAiCodeValuesEval_lst,
+					dicom_ai_codeMeaningProstate_eval_lst = dicomAiCodeMeaningEval_lst,
+					dicom_ai_CodingSchemeDesignatorProstate_eval_lst = dicomAiCodingSchemeDesignatorEval_lst,
+
+					cpus = cpus,
+					ram = ram,
+					preemptibleTries = preemptibleTries,
+					maxRetries = maxRetries,
+					cpuZones = cpuZones,
+					docker = "cciausu1/prostate-analysis:v1"
+			}
+        }
 		call combine_outputs {
-	  input:
+            input:
 				aiSegOutputFiles = ai_combine_seg.aiCombinationOutputFile,
 				aiSrOutputFiles = ai_rads.radiomicsCompressedOutputFile,
 				evalOutputFiles = evaluate_ai.evalCompressedOutputFile,
-				mhub_model_name_lst = mhub_model_name_lst,
-				idcSegOutputFile = idc_combine_seg.idcCombinationOutputFile,
-				idcSrOutputFile = idc_rads.radiomicsCompressedOutputFile,
-				cpus = cpus,
+                evalAddOutputFiles = evaluate_ai_add.evalCompressedOutputFile,
+                mhub_model_name_lst = mhub_model_name_lst,
+                idcSegOutputFile = idc_combine_seg.idcCombinationOutputFile,
+                idcSrOutputFile = idc_rads.radiomicsCompressedOutputFile,
+                idcSegAddOutputFile = idc_combine_seg_add.idcCombinationOutputFile,
+                idcSrAddOutputFile = idc_rads_add.radiomicsCompressedOutputFile,
+                cpus = cpus,
 				ram = ram,
 				preemptibleTries = preemptibleTries,
+				maxRetries = maxRetries,
 				cpuZones = cpuZones,
 				docker = "cciausu1/prostate-analysis:v1"
 		}
 	output {
 		Array[File] mhubCompressedOutputFile = ai_combine_seg.aiCombinationOutputFile
-		Array[File] evalCompressedOutputFile = evaluate_ai.evalCompressedOutputFile
-		Array[File] radsAiCompressedOutputFile = ai_rads.radiomicsCompressedOutputFile
-		File idcExpertCompressedOutputFile = idc_combine_seg.idcCombinationOutputFile
-		File radsIdcExpertCompressedOutputFile = idc_rads.radiomicsCompressedOutputFile
-		File finalCompressedOutputFile = combine_outputs.finalCompressedOutputFile
+        Array[File] evalCompressedOutputFile = evaluate_ai.evalCompressedOutputFile
+        Array[File] evalAddCompressedOutputFile = evaluate_ai_add.evalCompressedOutputFile
+        Array[File] radsAiCompressedOutputFile = ai_rads.radiomicsCompressedOutputFile
+        File idcExpertCompressedOutputFile = idc_combine_seg.idcCombinationOutputFile
+        File idcExpertAddCompressedOutputFile = idc_combine_seg_add.idcCombinationOutputFile
+        File radsIdcExpertCompressedOutputFile = idc_rads.radiomicsCompressedOutputFile
+        File radsIdcExpertAddCompressedOutputFile = idc_rads_add.radiomicsCompressedOutputFile
+        File finalCompressedOutputFile = combine_outputs.finalCompressedOutputFile
 	}
 }
 	#Task Definitions
@@ -195,6 +265,7 @@
 			Int cpus
 			Int ram
 			Int preemptibleTries
+			Int maxRetries
 			String gpuType
 			String gpuZones
 		}
@@ -221,10 +292,10 @@
 		wget https://raw.githubusercontent.com/vkt1414/mhubio/nonit/mhubio/run.py
 		#download custom config if provided
 		if [[ ~{mhubai_custom_config} != "default" ]]; then
-			wget ~{mhubai_custom_config} -O /app/data/custom.yml
-			python3 /app/run.py --config /app/data/custom.yml --print --debug
+			wget ~{mhubai_custom_config} -O /app/custom.yml
+			python3 /app/run.py --config /app/custom.yml --print --debug
 		else
-			python3 /app/run.py --config ~{"/app/models/" + mhub_model_name + "/config/default.yml"} --print --debug
+			python3 /app/run.py --workflow default --print --debug
 		fi
 		# Compress output data and move it to Cromwell root directory
 		tar -C /app/data -cvf - output_data | lz4 > /cromwell_root/output.tar.lz4
@@ -238,6 +309,7 @@
 			bootDiskSizeGb: 50
 			disks: "local-disk 10 HDD"
 			preemptible: preemptibleTries
+			maxRetries : maxRetries
 			gpuType: gpuType
 			gpuCount: 1
 			nvidiaDriverVersion: "525.147.05"
@@ -250,7 +322,10 @@
 		input {
 			#PATH TO MHUB ZIP LZ4 INPUT containing DICOM SEG objects
 			File MHUB_OUTPUT
-
+			
+			#custom SegmentAlgorithmName
+			String mhubaiCustomSegmentAlgorithmName
+			
 			#Combination variables to form whole prostate gland
 			#check if these codes are present, otherwise combine all segments
 			Array[String] dicomCodeValuesProstate_lst
@@ -265,6 +340,7 @@
 			Int cpus
 			Int ram
 			Int preemptibleTries
+			Int maxRetries
 		}
 		command <<<
 			#create output directories inside the VM
@@ -279,12 +355,14 @@
 			dicomCodeValuesProstate_lst = "~{ sep=' ' dicomCodeValuesProstate_lst }".split()
 			dicomCodeMeaningProstate_lst = "~{ sep=' ' dicomCodeMeaningProstate_lst }".split()
 			dicomCodingSchemeDesignatorProstate_lst = "~{ sep=' ' dicomCodingSchemeDesignatorProstate_lst }".split()
+			mhubaiCustomSegmentAlgorithmName = "~{mhubaiCustomSegmentAlgorithmName}"
 			MHUB_OUTPUT = "~{MHUB_OUTPUT}"
 
 			# Create a dictionary with the python variables
 			data = {'dicomCodeValuesProstate_lst': dicomCodeValuesProstate_lst,
 			'dicomCodeMeaningProstate_lst': dicomCodeMeaningProstate_lst,
 			'dicomCodingSchemeDesignatorProstate_lst': dicomCodingSchemeDesignatorProstate_lst,
+			'mhubaiCustomSegmentAlgorithmName': mhubaiCustomSegmentAlgorithmName,
 			'MHUB_OUTPUT': MHUB_OUTPUT,
 			'OUTPUT_PATH': "/app/data/ai_combine"
 			}
@@ -313,6 +391,7 @@
 			bootDiskSizeGb: 50
 			disks: "local-disk 10 HDD"
 			preemptible: preemptibleTries
+			maxRetries : maxRetries
 		}
 		output {
 			File aiCombinationOutputFile  = "ai_combination_archive.tar.lz4"
@@ -337,6 +416,7 @@
 			Int cpus
 			Int ram
 			Int preemptibleTries
+			Int maxRetries
 		}
 		command <<<
 			#create output directories inside the VM
@@ -385,6 +465,7 @@
 			bootDiskSizeGb: 50
 			disks: "local-disk 10 HDD"
 			preemptible: preemptibleTries
+			maxRetries: maxRetries
 		}
 		output {
 			File idcCombinationOutputFile  = "idc_combination_archive.tar.lz4"
@@ -400,7 +481,9 @@
 			Array[String] dicom_sr_CodeValues_lst
 			Array[String] dicom_sr_codeMeaning_lst
 			Array[String] dicom_sr_CodingSchemeDesignator_lst
-
+			#custom SR SeriesDesription Prefix
+			String terraRadSeriesDescription
+			
 			#docker image path
 			String docker
 
@@ -409,6 +492,7 @@
 			Int cpus
 			Int ram
 			Int preemptibleTries
+			Int maxRetries
 		}
 		command <<<
 			mkdir -p /app/data
@@ -422,13 +506,15 @@
 			dicom_sr_CodeValues_lst = "~{ sep=' ' dicom_sr_CodeValues_lst }".split()
 			dicom_sr_codeMeaning_lst = "~{ sep=' ' dicom_sr_codeMeaning_lst }".split()
 			dicom_sr_CodingSchemeDesignator_lst = "~{ sep=' ' dicom_sr_CodingSchemeDesignator_lst }".split()
+			terraRadSeriesDescription = "~{terraRadSeriesDescription}" 
 			SEG_OUTPUT = "~{SEG_OUTPUT}"
-
+			
 			# Create a dictionary with the list
 			data = {
 			'dicom_sr_CodeValues_lst' : dicom_sr_CodeValues_lst,
 			'dicom_sr_codeMeaning_lst' : dicom_sr_codeMeaning_lst,
 			'dicom_sr_CodingSchemeDesignator_lst' : dicom_sr_CodingSchemeDesignator_lst,
+			'terraRadSeriesDescription' : terraRadSeriesDescription,
 			'SEG_OUTPUT': SEG_OUTPUT,
 			'OUTPUT_PATH': "/app/data/output_sr"
 			}
@@ -459,6 +545,7 @@
 			bootDiskSizeGb: 50
 			disks: "local-disk 10 HDD"
 			preemptible: preemptibleTries
+			maxRetries: maxRetries
 		}
 		output {
 			File radiomicsCompressedOutputFile  = "radiomics_archive.tar.lz4"
@@ -484,6 +571,7 @@
 			Int cpus
 			Int ram
 			Int preemptibleTries
+			Int maxRetries
 		}
 		command <<<
 			mkdir -p /app/data
@@ -539,72 +627,84 @@
 			bootDiskSizeGb: 50
 			disks: "local-disk 10 HDD"
 			preemptible: preemptibleTries
-		}
+			maxRetries: maxRetries
+			}
 		output {
-				File evalCompressedOutputFile  = "eval_archive.tar.lz4"
+			File evalCompressedOutputFile  = "eval_archive.tar.lz4"
 		}
 	}
 	task combine_outputs {
-		input {
-			Array[File] aiSegOutputFiles
-			Array[File] aiSrOutputFiles
-			Array[File] evalOutputFiles
-			Array[String] mhub_model_name_lst
-			File idcSegOutputFile
-			File idcSrOutputFile
-
-			#docker image path
-			String docker
-
-			#VM Config
-			String cpuZones
-			Int cpus
-			Int ram
-			Int preemptibleTries
+        input {
+            Array[File] aiSegOutputFiles
+            Array[File] aiSrOutputFiles
+            Array[File] evalOutputFiles
+            Array[File] evalAddOutputFiles
+            Array[String] mhub_model_name_lst
+            File idcSegOutputFile
+            File idcSrOutputFile
+            File idcSegAddOutputFile
+            File idcSrAddOutputFile
+            
+            #docker image path
+            String docker
+            
+            #VM Config
+            String cpuZones
+            Int cpus
+            Int ram
+            Int preemptibleTries
+			Int maxRetries
 		}
 		command  <<<
-			mkdir -p /app/data
-			mkdir -p /app/data/output_agg
-			cd /app/data
-			pip3 install pyyaml
-			python3 <<CODE
-			import json
-			import yaml
-			aiSegOutputFiles = "~{ sep=' ' aiSegOutputFiles }".split()
-			aiSrOutputFiles = "~{ sep=' ' aiSrOutputFiles }".split()
-			evalOutputFiles = "~{ sep=' ' evalOutputFiles }".split()
-			mhub_model_name_lst = "~{ sep=' ' mhub_model_name_lst }".split()
-			idcSegOutputFile = "~{idcSegOutputFile}"
-			idcSrOutputFile = "~{idcSrOutputFile}"
-			# Create a dictionary with the list
-			data = {
-				'mhubCompressedOutputFiles' : aiSegOutputFiles,
-				'radsAiCompressedOutputFiles' : aiSrOutputFiles,
-				'evalCompressedOutputFiles' : evalOutputFiles,
-				'idcExpertCompressedOutputFile' : idcSegOutputFile,
-				'radsIdcExpertCompressedOutputFile' : idcSrOutputFile,
-				'mhub_model_name_lst' : mhub_model_name_lst,
-				'OUTPUT_PATH': "/app/data/output_agg"}
-			# Write the dictionary to a JSON file
-			with open("/app/data/params_eval.yaml", "w") as outfile:
-				yaml.dump(data, outfile, indent=4, allow_unicode=True)
-			CODE
-			#wget notebook from github
-			cd /app/data
-			wget https://raw.githubusercontent.com/ccosmin97/idc-prostate-mri-analysis/main/terra_mhub/papermill_data/combine_tasks_output.ipynb
-			papermill /app/data/combine_tasks_output.ipynb /app/data/combine_tasks_output-output.ipynb -f /app/data/params_eval.yaml
-			#copy archive to cromwell output
-			cp /app/data/output_agg/agg_archive.tar.lz4 /cromwell_root/agg_archive.tar.lz4
-			cp /app/data/combine_tasks_output-output.ipynb /cromwell_root/combine_tasks_output-output.ipynb
-		>>>
-		runtime {
-			docker: docker
-			cpu: cpus
-			zones: cpuZones
-			memory: ram + " GiB"
-			bootDiskSizeGb: 50
-			disks: "local-disk 10 HDD"
-			preemptible: preemptibleTries
+            mkdir -p /app/data
+            mkdir -p /app/data/output_agg
+            cd /app/data
+            pip3 install pyyaml
+            python3 <<CODE
+            import json
+            import yaml
+            aiSegOutputFiles = "~{ sep=' ' aiSegOutputFiles }".split()
+            aiSrOutputFiles = "~{ sep=' ' aiSrOutputFiles }".split()
+            evalOutputFiles = "~{ sep=' ' evalOutputFiles }".split()
+            evalAddOutputFiles = "~{ sep=' ' evalAddOutputFiles }".split()
+            mhub_model_name_lst = "~{ sep=' ' mhub_model_name_lst }".split()
+            idcSegOutputFile = "~{idcSegOutputFile}"
+            idcSrOutputFile = "~{idcSrOutputFile}"
+            idcSegAddOutputFile = "~{idcSegAddOutputFile}"
+            idcSrAddOutputFile = "~{idcSrAddOutputFile}"
+            # Create a dictionary with the list
+            data = {
+                'mhubCompressedOutputFiles' : aiSegOutputFiles,
+                'radsAiCompressedOutputFiles' : aiSrOutputFiles,
+                'evalCompressedOutputFiles' : evalOutputFiles,
+                'evalAddCompressedOutputFiles' : evalAddOutputFiles,
+                'idcExpertCompressedOutputFile' : idcSegOutputFile,
+                'radsIdcExpertCompressedOutputFile' : idcSrOutputFile,
+                'idcExpertAddCompressedOutputFile' : idcSegAddOutputFile,
+                'radsIdcExpertAddCompressedOutputFile' : idcSrAddOutputFile,
+                'mhub_model_name_lst' : mhub_model_name_lst,
+                'OUTPUT_PATH': "/app/data/output_agg"}
+            # Write the dictionary to a JSON file
+            with open("/app/data/params_eval.yaml", "w") as outfile:
+                yaml.dump(data, outfile, indent=4, allow_unicode=True)
+            CODE
+            #wget notebook from github
+            cd /app/data
+            wget https://raw.githubusercontent.com/ccosmin97/idc-prostate-mri-analysis/main/terra_mhub/papermill_data/combine_tasks_output.ipynb
+            papermill /app/data/combine_tasks_output.ipynb /app/data/combine_tasks_output-output.ipynb -f /app/data/params_eval.yaml
+            #copy archive to cromwell output
+            cp /app/data/output_agg/agg_archive.tar.lz4 /cromwell_root/agg_archive.tar.lz4
+            cp /app/data/combine_tasks_output-output.ipynb /cromwell_root/combine_tasks_output-output.ipynb
+        >>>
+        runtime {
+            docker: docker
+            cpu: cpus
+            zones: cpuZones
+            memory: ram + " GiB"
+            bootDiskSizeGb: 50
+            disks: "local-disk 10 HDD"
+            preemptible: preemptibleTries
+			maxRetries: maxRetries
 		}
 		output {
 			File finalCompressedOutputFile = "agg_archive.tar.lz4"
@@ -623,6 +723,7 @@
 			Int cpus
 			Int ram
 			Int preemptibleTries
+			Int maxRetries
 		}
 		command <<<
 			pip install thedicomsort
@@ -653,6 +754,7 @@
 			bootDiskSizeGb: 50
 			disks: "local-disk 10 HDD"
 			preemptible: preemptibleTries
+			maxRetries: maxRetries
 		}
 		output {
 			File idcMultiModalDataCompressedOutputFile = "idc_data_multi_modal.tar.lz4"
