@@ -260,7 +260,7 @@
 			CODE
 			# #wget notebook from github
 			cd /app/data
-			wget https://raw.githubusercontent.com/ccosmin97/idc-prostate-mri-analysis/main/terra_mhub/papermill_data/ai_mhub_seg_dicom_combination.ipynb
+			wget https://raw.githubusercontent.com/ImagingDataCommons/idc-prostate-mri-analysis/main/terra_mhub/papermill_notebooks/ai_mhub_seg_dicom_combination.ipynb
 
 			papermill /app/data/ai_mhub_seg_dicom_combination.ipynb /app/data/ai_mhub_seg_dicom_combination-output.ipynb -f /app/data/params_eval.yaml
 			# notebook.ipynb -y 	paramters.yaml -o output.ipynb
@@ -341,7 +341,7 @@
 			CODE
 			# #wget notebook from github
 			cd /app/data
-			wget https://raw.githubusercontent.com/ccosmin97/idc-prostate-mri-analysis/main/terra_mhub/papermill_data/sr_dicom_generation.ipynb
+			wget https://raw.githubusercontent.com/ImagingDataCommons/idc-prostate-mri-analysis/main/terra_mhub/papermill_notebooks/sr_dicom_generation.ipynb
 
 			papermill /app/data/sr_dicom_generation.ipynb /app/data/sr_dicom_generation-output.ipynb -f /app/data/params_eval.yaml
 
@@ -407,7 +407,7 @@
 				CODE
 				#wget notebook from github
 				cd /app/data
-				wget https://raw.githubusercontent.com/ccosmin97/idc-prostate-mri-analysis/refs/heads/main/terra_mhub/papermill_data/combine_tasks_output_inference_only.ipynb
+				wget https://raw.githubusercontent.com/ImagingDataCommons/idc-prostate-mri-analysis/refs/heads/main/terra_mhub/papermill_notebooks/combine_tasks_output_inference_only.ipynb
 				papermill /app/data/combine_tasks_output_inference_only.ipynb /app/data/combine_tasks_output_inference_only-output.ipynb -f /app/data/params_eval.yaml
 				#copy archive to cromwell output
 				cp /app/data/output_agg/agg_archive.tar.lz4 /cromwell_root/agg_archive.tar.lz4
