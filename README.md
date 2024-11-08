@@ -28,11 +28,11 @@ More granular information about the contents of the Terra workflow used is provi
 In this section  we will provide details about the files location of the Terra workflow : 
  -  [ProstateSegWorkflow.wdl](terra_mhub/wdl_scripts/ProstateSegWorkflow.wdl) : Terra.bio main workflow script.wdl that is use to run inference and evaluation of the AI models on Imaging Data Commons public prostate MRI focused collections.
  - [terra_mhub/papermill_notebooks](terra_mhub/papermill_notebooks) : python-based notebooks called inside the workflow.wdl for processing and evaluating the segmentation results from the AI segmentation methods. These notebooks are not designed to be run outside the workflow.
-        -  [ai_mhub_seg_dicom_combination.ipynb](terra_mhub/papermill_notebooks/ai_mhub_seg_dicom_combination.ipynb) : input is Mhub produced DICOM SEG objects, output is DICOM SEG objects with added whole prostate gland(fusion of Peripheral Zone and Transition Zone of the prostate) segment.
-        -  [idc_seg_dicom_combination.ipynb](terra_mhub/papermill_notebooks/idc_seg_dicom_combination.ipynb) : downloading of expert annotations DICOM SEG objects and adding if necessary the whole prostate gland segment.  
-        -  [sr_dicom_generation.ipynb](terra_mhub/papermill_notebooks/sr_dicom_generation.ipynb) : generation of DICOM Structured Reports objects from DICOM SEG objects, storing for example segments mesh volumes.
-        -  [seg_dicom_eval.ipynb](terra_mhub/papermill_notebooks/seg_dicom_eval.ipynb) : input  is AI and expert DICOM SEG objects, output is quantitative analysis(DSC,HD) stored in csv files.
-        -  [combine_tasks_output.ipynb](terra_mhub/papermill_notebooks/combine_tasks_output.ipynb) : Organization of AI DICOM SEG/SR and quantitative analysis results into a structured otput folder.
+     -  [ai_mhub_seg_dicom_combination.ipynb](terra_mhub/papermill_notebooks/ai_mhub_seg_dicom_combination.ipynb) : input is Mhub produced DICOM SEG objects, output is DICOM SEG objects with added whole prostate gland(fusion of Peripheral Zone and Transition Zone of the prostate) segment.
+     -  [idc_seg_dicom_combination.ipynb](terra_mhub/papermill_notebooks/idc_seg_dicom_combination.ipynb) : downloading of expert annotations DICOM SEG objects and adding if necessary the whole prostate gland segment.  
+     - [sr_dicom_generation.ipynb](terra_mhub/papermill_notebooks/sr_dicom_generation.ipynb) : generation of DICOM Structured Reports objects from DICOM SEG objects, storing for example segments mesh volumes.
+     -  [seg_dicom_eval.ipynb](terra_mhub/papermill_notebooks/seg_dicom_eval.ipynb) : input  is AI and expert DICOM SEG objects, output is quantitative analysis(DSC,HD) stored in csv files.
+     -  [combine_tasks_output.ipynb](terra_mhub/papermill_notebooks/combine_tasks_output.ipynb) : Organization of AI DICOM SEG/SR and quantitative analysis results into a structured otput folder.
 -  [terra_mhub_all_collections_v3_SITK_RES.tsv](terra_mhub/data_tables/terra_mhub_all_collections_v3_SITK_RES.tsv): input data table serving as input for the [ProstateSegWorkflow.wdl](terra_mhub/wdl_scripts/ProstateSegWorkflow.wdl)
 -   [bigquery_join_seg_sr_analysis_results.ipynb](terra_mhub/process_terra_out/bigquery_join_seg_sr_analysis_results.ipynb): join AI SEG/SR and analysis results together through BigQuery.
 -   [process_terra_outputs.ipynb](terra_mhub/process_terra_out/process_terra_outputs.ipynb): retrieve terra workflow output files stored in GCP buckets,organize them and export them to GCP buckets, dicom stores and BigQuery tables.
@@ -42,7 +42,7 @@ In this section  we will provide details about the files location of the Terra w
 In this section  we will provide details about the files location of the analysis results :
 -  [stats_summary.ipynb](analysis_notebooks/stats_summary.ipynb) : quantitative analysis summary table statistics in a python notebook.
 -  [plots_analysis.ipynb](analysis_notebooks/plots_analysis.ipynb) : python notebook for visualization plots.
- - [analysis_statistical_testing.ipynb](analysis_notebooks/analysis_statistical_testing.ipynb) : python notebook for statistical analysis.
+- [analysis_statistical_testing.ipynb](analysis_notebooks/analysis_statistical_testing.ipynb) : python notebook for statistical analysis.
  
 ### analysis_results folder items
 - [analysis_results.csv](analysis_results/analysis_results.csv) : csv file containing all analysis results.
