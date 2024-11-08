@@ -37,6 +37,7 @@ In this section  we will provide details about the files location of the Terra w
 -   [bigquery_join_seg_sr_analysis_results.ipynb](terra_mhub/process_terra_out/bigquery_join_seg_sr_analysis_results.ipynb): join AI SEG/SR and analysis results together through BigQuery.
 -   [process_terra_outputs.ipynb](terra_mhub/process_terra_out/process_terra_outputs.ipynb): retrieve terra workflow output files stored in GCP buckets,organize them and export them to GCP buckets, dicom stores and BigQuery tables.
 -   [terra_data_table_setup_tsv_all.ipynb](terra_mhub/terra_data_table_setup_tsv_all.ipynb) : python notebook aiming to create [terra_mhub_all_collections_v3_SITK_RES.tsv](terra_mhub/data_tables/terra_mhub_all_collections_v3_SITK_RES.tsv) from querying Imaging Data Commons data through BigQuery. 
+-   [DockerProcessSegDockerfile](terra_mhub/DockerProcessSegDockerfile): DockerFile used to create processing and evaluation VM
 
 ### analysis_notebooks 
 In this section  we will provide details about the files location of the analysis results :
