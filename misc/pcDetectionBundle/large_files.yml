@@ -1,3 +1,0 @@
-large_files:
-  - path: "models/model.pt"
-    url: "https://zenodo.org/record/6397057/files/tumor.pt?download=1"

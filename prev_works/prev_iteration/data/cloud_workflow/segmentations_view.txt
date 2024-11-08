@@ -1,0 +1,79 @@
+WITH
+  segmentations AS (
+  WITH
+    segs AS (
+    SELECT
+      PatientID,
+      StudyInstanceUID,
+      SeriesInstanceUID,
+      SOPInstanceUID,
+      FrameOfReferenceUID,
+      SegmentSequence
+    FROM
+      `idc-sandbox-003.prostate_benchmarking_neurips_2024.seg_ai_dcm_table`
+    WHERE
+      # more reliable than Modality = "SEG"
+      SOPClassUID = "1.2.840.10008.5.1.4.1.1.66.4" )
+  SELECT
+    PatientID,
+    StudyInstanceUID,
+    SeriesInstanceUID,
+    SOPInstanceUID,
+    FrameOfReferenceUID,
+
+    CASE ARRAY_LENGTH(unnested.SegmentedPropertyCategoryCodeSequence)
+      WHEN 0 THEN NULL
+    ELSE
+    unnested.SegmentedPropertyCategoryCodeSequence [
+  OFFSET
+    (0)]
+  END
+    AS SegmentedPropertyCategory,
+    CASE ARRAY_LENGTH(unnested.SegmentedPropertyTypeCodeSequence)
+      WHEN 0 THEN NULL
+    ELSE
+    unnested.SegmentedPropertyTypeCodeSequence [
+  OFFSET
+    (0)]
+  END
+    AS SegmentedPropertyType,
+    #unnested.SegmentedPropertyTypeCodeSequence,
+    #unnested.SegmentedPropertyTypeModifierCodeSequence,
+    unnested.SegmentAlgorithmType,
+	  unnested.SegmentAlgorithmName,
+    unnested.SegmentNumber,
+    #unnested.TrackingUID,
+    #unnested.TrackingID
+  FROM
+    segs
+  CROSS JOIN
+    UNNEST(SegmentSequence) AS unnested),
+  sampled_sops AS (
+  SELECT
+    SOPInstanceUID AS seg_SOPInstanceUID,
+    ReferencedSeriesSequence[SAFE_OFFSET(0)].ReferencedInstanceSequence[SAFE_OFFSET(0)].ReferencedSOPInstanceUID AS rss_one
+  FROM
+    `idc-sandbox-003.prostate_benchmarking_neurips_2024.seg_ai_dcm_table`
+  WHERE
+    Modality="SEG"
+    AND SOPClassUID = "1.2.840.10008.5.1.4.1.1.66.4" ),
+  coalesced_ref AS (
+  SELECT
+    *,
+    rss_one AS referenced_sop
+  FROM
+    sampled_sops)
+SELECT
+  segmentations.*,
+  dicom_all.SeriesInstanceUID AS segmented_SeriesInstanceUID
+FROM
+  coalesced_ref
+JOIN
+  `bigquery-public-data.idc_current.dicom_all` AS dicom_all
+ON
+  coalesced_ref.referenced_sop = dicom_all.SOPInstanceUID
+RIGHT JOIN
+  segmentations
+ON
+  segmentations.SOPInstanceUID = coalesced_ref.seg_SOPInstanceUID
+

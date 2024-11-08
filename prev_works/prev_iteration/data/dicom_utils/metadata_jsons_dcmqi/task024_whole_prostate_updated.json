@@ -1,0 +1,36 @@
+{
+  "ContentCreatorName": "Reader1",
+  "ClinicalTrialSeriesID": "Session1",
+  "ClinicalTrialTimePointID": "1",
+  "SeriesDescription": "Prostate segmentation - nnUNet Task024",
+  "SeriesNumber": "300",
+  "InstanceNumber": "1",
+  "BodyPartExamined": "PROSTATE",
+  "segmentAttributes": [
+    [
+      {
+        "labelID": 1,
+        "SegmentAlgorithmType": "AUTOMATIC",
+        "SegmentAlgorithmName": "nnUNet-v1-Task024_Promise",
+        "SegmentedPropertyCategoryCodeSequence": {
+          "CodeValue": "123037004",
+          "CodingSchemeDesignator": "SCT",
+          "CodeMeaning": "Anatomical Structure"
+        },
+        "SegmentedPropertyTypeCodeSequence": {
+          "CodeValue": "41216001",
+          "CodingSchemeDesignator": "SCT",
+          "CodeMeaning": "Prostate"
+        },
+        "recommendedDisplayRGBValue": [
+          255,
+          51,
+          0
+        ]
+      }
+    ]
+  ],
+  "ContentLabel": "Segmentation",
+  "ContentDescription": "Segmentation",
+  "ClinicalTrialCoordinatingCenterName": "dcmqi"
+}
